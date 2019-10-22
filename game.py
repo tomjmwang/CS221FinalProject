@@ -185,7 +185,8 @@ class Game:
                 new_state = self.loseCard(state, i)
                 new_state = self.replaceCard(new_state, j, self.function_to_char[state[2][0]])
                 if len(state[2][0]) > 5 and state[2][0][:5] == "block":
-                    pass
+                    new_player = self.getNextLivingPlayer(self.last_player)
+                    new_state = (new_state[0], new_state[1], None, False)
                 else:
                     if (state[2][0] == "assassinate" or state[2][0] == "steal") and not self.isDead(state[2][2]):
                         new_state = (new_state[0], new_state[1], state[2], True)
