@@ -140,12 +140,13 @@ class Game:
 
         else:
             if state[2][1] == i:
-                    return []
+                return []
             if not state[3]:
-                return [("doubt", i, state[2][1]), (None, i, None)]
+                return [("doubt", i, state[2][1]), ("no_doubt", i, None)]
+                #return [("no_doubt", i, None)]
             else:
                 if state[2][0] == "foreign_aid":
-                    return [("block_foreign_aid", i, state[2][1]), (None, i, None)]
+                    return [("block_foreign_aid", i, state[2][1]), ("no_block", i, state[2][1])]
                 if state[2][2] != i:
                     return [(None, i, None)]
                 if state[2][0] == "steal":
@@ -160,8 +161,13 @@ class Game:
         i = action[1]
         j = action[2]
         new_player = self.getNextLivingPlayer(i)
-        if action[0] == None:
+        if action[0] == "no_doubt" or action[0] == "no_block":
             return state, new_player
+        if action[0] == None:
+            new_state = self.takeEffect(state, state[2])
+            new_state = (new_state[0], new_state[1], None, False)
+            new_player = self.getNextLivingPlayer(self.last_player)
+            return new_state, new_player
         new_coins = list(state[1])
         if action[0] == "income":
             new_coins[i] += 1
@@ -190,14 +196,14 @@ class Game:
                 if len(state[2][0]) > 5 and state[2][0][:5] == "block":
                     new_state = self.takeEffect(new_state, (state[2][0][6:], state[2][2], state[2][1]))
                 new_state = (new_state[0], new_state[1], None, False)
+        elif len(action[0]) > 5 and action[0][:5] == "block":
+            new_state = (state[0], tuple(new_coins), action, False)
         else:
-            if action[0] != "block_foreign_aid":
-                self.last_player = i
+            self.last_player = i
             if action[0] == "assassinate":
                 new_coins[i] -= 3
             new_state = (state[0], tuple(new_coins), action, False)
         return new_state, new_player
-
 
 
 
@@ -216,12 +222,25 @@ class Game:
         while True:
             actions = self.getActions(current_player, self.game_state)
             if len(actions) == 0:
-                new_player = self.getNextLivingPlayer(self.game_state[2][1])
-                new_state = self.takeEffect(self.game_state, self.game_state[2])
+                cur_action = self.game_state[2]
+                if cur_action[0] == "tax" or cur_action[0] == "foreign_aid":
+                    new_player = self.getNextLivingPlayer(self.game_state[2][1])
+                    new_state = self.takeEffect(self.game_state, self.game_state[2])
+                elif len(cur_action[0]) > 5 and cur_action[0][:5] == "block":
+                    new_player = self.getNextLivingPlayer(self.game_state[2][2])
+                    new_state = (self.game_state[0], self.game_state[1], None, False)
+                    print("Player", cur_action[1], "blocked player", cur_action[2])
+                else:
+                    new_player = cur_action[2]
+                    new_state = (self.game_state[0], self.game_state[1], cur_action, True)
             else:
                 action = self.chooseRandomAction(actions)
-                if action[0] == None:
+                if action[0] == "no_doubt":
                     print("Player", action[1], "chose to not doubt")
+                elif action[0] == "no_block":
+                    print("Player", action[1], "chose to not block foreign aid of player", action[2])
+                elif action[0] == None:
+                    print("Player", action[1], "chose to not block")
                 else:
                     print("Player", action[1], "chose action", action[0], "against", action[2])
                 new_state, new_player = self.succ(action, self.game_state)
