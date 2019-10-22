@@ -187,9 +187,13 @@ class Game:
                 if len(state[2][0]) > 5 and state[2][0][:5] == "block":
                     pass
                 else:
-                    new_state = self.takeEffect(new_state, state[2])
-                new_player = self.getNextLivingPlayer(self.last_player)
-                new_state = (new_state[0], new_state[1], None, False)
+                    if (state[2][0] == "assassinate" or state[2][0] == "steal") and not self.isDead(state[2][2]):
+                        new_state = (new_state[0], new_state[1], state[2], True)
+                        new_player = state[2][2]
+                    else:
+                        new_state = self.takeEffect(new_state, state[2])
+                        new_player = self.getNextLivingPlayer(self.last_player)
+                        new_state = (new_state[0], new_state[1], None, False)
             else:
                 new_state = self.loseCard(state, j)
                 new_player = self.getNextLivingPlayer(self.last_player)
