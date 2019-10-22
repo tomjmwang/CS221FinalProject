@@ -205,6 +205,14 @@ class Game:
             new_state = (state[0], tuple(new_coins), action, False)
         return new_state, new_player
 
+    def printState(self):
+        state = self.game_state
+        print("Current state:")
+        for i,cards in enumerate(state[0]):
+            print("player", i, ":")
+            for card in cards:
+                print(card[0], card[1])
+            print("number of coins:", state[1][i])
 
 
     def simulateGame(self):
@@ -246,10 +254,14 @@ class Game:
                 new_state, new_player = self.succ(action, self.game_state)
             self.game_state = new_state
             current_player = new_player
+            self.printState()
+            input("")
             if self.isDead(current_player):
                 current_player = self.getNextLivingPlayer(current_player)
             #print("Current state: ", self.game_state)
             if self.isEnd():
+                winner = self.getNextLivingPlayer(current_player)
+                print("Player", winner, "wins!")
                 break
         return self.game_state
 
