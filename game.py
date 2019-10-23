@@ -276,7 +276,7 @@ class Game:
             actions = self.getActions(current_player, self.game_state)
             if len(actions) == 0:
                 cur_action = self.game_state[2]
-                if not self.game_state[2]:
+                if not self.game_state[3]:
                     if cur_action[0] == "tax" or cur_action[0] == "foreign_aid":
                         new_player = self.getNextLivingPlayer(self.game_state[2][1])
                         new_state = self.takeEffect(self.game_state, self.game_state[2])
@@ -292,8 +292,8 @@ class Game:
                     new_player = self.getNextLivingPlayer(self.game_state[2][1])
             else:
                 if current_player == 0:
-                    #action = self.chooseBaseLineAction(actions, self.game_state)
-                    action = self.chooseRandomAction(actions)
+                    action = self.chooseBaseLineAction(actions, self.game_state)
+                    #action = self.chooseRandomAction(actions)
                 else:
                     action = self.chooseRandomAction(actions)
                 """
