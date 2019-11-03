@@ -28,7 +28,7 @@ class Game:
                     break
             if all_inactive:
                 dead_players += 1
-        if dead_players == self.num_players - 1:
+        if dead_players >= self.num_players - 1:
             return True
         return False
 
