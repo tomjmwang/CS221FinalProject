@@ -59,6 +59,29 @@ class QLearning(game.Game):
         score = 0.0
         if self.isEndState(new_state) and self.getNextLivingPlayer(0) == 0:
             score += 1000.0
+
+        num_living_old = 0
+        num_living_new = 0
+        for j, card in enumerate(old_state[0][0]):
+            if card[1] == 1:
+                num_living_old += 1
+            if new_state[0][0][j] == 1:
+                num_living_new += 1
+
+        score -= 500 * (num_living_old - num_living_new)
+
+        for i in range(1, self.num_players):
+            num_living_old = 0
+            num_living_new = 0
+            for j, card in enumerate(old_state[0][i]):
+                if card[1] == 1:
+                    num_living_old += 1
+                if new_state[0][i][j] == 1:
+                    num_living_new += 1
+            score += (num_living_old - num_living_new) * 100
+
+
+
         return score
 
     def chooseQAction(self, actions, state):
@@ -180,7 +203,7 @@ class QLearning(game.Game):
                     try:
                         
                         action = policy[self.player_state]
-                        if action not in acions:
+                        if action not in actions:
                             action = self.chooseRandomAction(actions)
                         self.f += 1
                     except:

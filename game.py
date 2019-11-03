@@ -33,6 +33,7 @@ class Game:
         return False
 
     def reset(self):
+        self.starting_player = random.randrange(self.num_players)
         if self.game_state == None:
             random.shuffle(self.cards)
             return
