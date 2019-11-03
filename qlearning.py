@@ -56,9 +56,10 @@ class QLearning(game.Game):
         self.player_state = (element1, self.game_state[1], self.game_state[2],self.game_state[3])
 
     def reward(self, old_state, action, new_state):
-        if self.isEndState(new_state):
-            return 1000.0
-        return 0.0
+        score = 0.0
+        if self.isEndState(new_state) and self.getNextLivingPlayer(0) == 0:
+            score += 1000.0
+        return score
 
     def chooseQAction(self, actions, state):
         if random.random() < self.eps:
@@ -73,15 +74,15 @@ class QLearning(game.Game):
         return max_action, max_q
 
     def calculatePolicy(self):
-        state_to_q = collections.defaultdict(float)
+        state_to_q = {}
         for k,v in self.Q.items():
-            #if k[0] not in state_to_q:
-            #    self.pi[k[0]] = k[1]
-            #    state_to_q[k[0]] = v
-            #else:
-            if v > state_to_q[k[0]]:
-                state_to_q[k[0]] = v
+            if k[0] not in state_to_q:
                 self.pi[k[0]] = k[1]
+                state_to_q[k[0]] = v
+            else:
+                if v > state_to_q[k[0]]:
+                    state_to_q[k[0]] = v
+                    self.pi[k[0]] = k[1]
         print(len(self.pi))
 
 
@@ -179,6 +180,8 @@ class QLearning(game.Game):
                     try:
                         
                         action = policy[self.player_state]
+                        if action not in acions:
+                            action = self.chooseRandomAction(actions)
                         self.f += 1
                     except:
                         self.e += 1
@@ -200,7 +203,7 @@ def main():
     cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
     rl = QLearning(cards)
     counts = collections.defaultdict(int)
-    for i in range(30000):
+    for i in range(10000):
         rl.reset()
         winner = rl.simulateQLearning()
         counts[winner] += 1
