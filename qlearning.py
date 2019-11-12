@@ -1,10 +1,11 @@
 import game
 import collections
 import random
+import pickle
 
 class QLearning(game.Game):
 
-    def __init__(self, cards, player_card_num=2, num_players=3):
+    def __init__(self, cards, player_card_num=2, num_players=2):
         self.num_players = num_players
         self.starting_player = 0
         self.last_player = 0
@@ -108,7 +109,7 @@ class QLearning(game.Game):
                 if v > state_to_q[k[0]]:
                     state_to_q[k[0]] = v
                     self.pi[k[0]] = k[1]
-        print(len(self.pi))
+        # print(len(self.pi))
 
 
     def simulateQLearning(self):
@@ -241,31 +242,49 @@ class QLearning(game.Game):
         return winner
 
 def main():
+
+    TRIANING_ITR =50000
+    TESTING_ITR = 10000
+    SAVE_ITR = TRIANING_ITR/10
+
     cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
     rl = QLearning(cards)
+
+    with open('out.txt', 'w') as f:
+        print('rl.num_players', rl.num_players, file=f)
+        print('rl.eps: ', rl.eps,file=f)
+        print('rl.discount: ', rl.discount,file=f)
+        print('rl.alpha: ', rl.alpha,file=f)
+
     counts = collections.defaultdict(int)
-    for i in range(100000):
+    for i in range(TRIANING_ITR):
         rl.reset()
         winner = rl.simulateQLearning()
         counts[winner] += 1
-        print("Game", i+1, "ends, Player", winner, "wins.")
-    
+        # print("Game", i+1, "ends, Player", winner, "wins.")
+        if (i%SAVE_ITR ==0 and i!=0) or (i == TRIANING_ITR-1):
+            with open('rl_qlearning_numPlayer{}_eps{}_alpha{}_itr{}.pickle'.format(rl.num_players,rl.eps,rl.alpha,i), 'wb') as handle:
+                pickle.dump(rl.Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            
+            # Testing
+            rl.calculatePolicy()
+            rl.eps = 0
+            counts2 = collections.defaultdict(int)
+            for j in range(TESTING_ITR):
+                rl.reset()
+                winner = rl.evaluatePolicy(rl.pi)
+                counts2[winner] += 1
+                # print("Game", i+1, "ends, Player", winner, "wins.")
+            # print('itr', i , ':training dict: ',counts)
+            # print('itr', i , ':testing dict: ',counts2)
+            with open('out.txt', 'w') as f:
+                print('itr', i , ':training win rate: ',counts[0]/i)
+                print('itr', i , ':testing win rate: ',counts2[0]/TESTING_ITR)
+            # print(len(rl.Q))
+            # print(len(rl.pi))
+            # print("e:", rl.e, "f:" ,rl.f)
 
-    rl.calculatePolicy()
-    rl.eps = 0
 
-    counts2 = collections.defaultdict(int)
-    for i in range(1000):
-        rl.reset()
-        winner = rl.evaluatePolicy(rl.pi)
-        counts2[winner] += 1
-        print("Game", i+1, "ends, Player", winner, "wins.")
-    print(counts)
-    print(counts2)
-    
-    print(len(rl.Q))
-    print(len(rl.pi))
-    print("e:", rl.e, "f:" ,rl.f)
     """
     counter = collections.defaultdict(int)
     for k,v in rl.Q.items():
