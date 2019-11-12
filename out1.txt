@@ -1,0 +1,27 @@
+rl.num_players 2
+rl.eps:  0.2
+rl.discount:  0.95
+rl.alpha:  0.05
+itr 500000 :training win rate:  0.574598
+itr 500000 :testing win rate:  0.6113
+itr 1000000 :training win rate:  0.609969
+itr 1000000 :testing win rate:  0.6495
+itr 1500000 :training win rate:  0.622628
+itr 1500000 :testing win rate:  0.6523
+itr 2000000 :training win rate:  0.632165
+itr 2000000 :testing win rate:  0.6493
+itr 2500000 :training win rate:  0.6367572
+itr 2500000 :testing win rate:  0.6491
+itr 3000000 :training win rate:  0.6407216666666666
+itr 3000000 :testing win rate:  0.6547
+itr 3500000 :training win rate:  0.6445882857142857
+itr 3500000 :testing win rate:  0.6698
+itr 4000000 :training win rate:  0.64661825
+itr 4000000 :testing win rate:  0.6581
+itr 4500000 :training win rate:  0.6474268888888889
+itr 4500000 :testing win rate:  0.6606
+itr 4999999 :training win rate:  0.650154130030826
+itr 4999999 :testing win rate:  0.6775
+223264
+95420
+e: 483 f: 443194

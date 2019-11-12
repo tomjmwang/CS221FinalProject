@@ -243,7 +243,7 @@ class QLearning(game.Game):
 
 def main():
 
-    TRIANING_ITR =50000
+    TRIANING_ITR =5000000
     TESTING_ITR = 10000
     SAVE_ITR = TRIANING_ITR/10
 
@@ -277,12 +277,13 @@ def main():
                 # print("Game", i+1, "ends, Player", winner, "wins.")
             # print('itr', i , ':training dict: ',counts)
             # print('itr', i , ':testing dict: ',counts2)
-            with open('out.txt', 'w') as f:
-                print('itr', i , ':training win rate: ',counts[0]/i)
-                print('itr', i , ':testing win rate: ',counts2[0]/TESTING_ITR)
-            # print(len(rl.Q))
-            # print(len(rl.pi))
-            # print("e:", rl.e, "f:" ,rl.f)
+            with open('out.txt', 'a') as f:
+                print('itr', i , ':training win rate: ',counts[0]/i,file=f)
+                print('itr', i , ':testing win rate: ',counts2[0]/TESTING_ITR,file=f)
+    with open('out.txt', 'a') as f:
+        print(len(rl.Q),file=f)
+        print(len(rl.pi),file=f)
+        print("e:", rl.e, "f:" ,rl.f,file=f)
 
 
     """
