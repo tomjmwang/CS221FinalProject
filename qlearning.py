@@ -24,6 +24,8 @@ class QLearning(game.Game):
         self.pi = {}
         self.e = 0
         self.f = 0
+        self.last_state = None
+        self.accum_reward = 0
 
     def isEndState(self, state):
         dead_players = 0
@@ -148,13 +150,18 @@ class QLearning(game.Game):
                 else:
                     action = self.chooseRandomAction(actions)
                 new_state, new_player = self.succ(action, self.game_state)
-            if current_player == 0:
-                old_state = self.game_state
-                r = self.reward(old_state, action, new_state)
-                next_max_q = 0
-                if len(self.Q) > 0:
-                    next_max_q = max(list(self.Q.values()))
-                self.Q[(self.player_state,action)] = max_q + self.alpha*(r + self.discount*next_max_q - max_q)
+            if current_player == 0 and len(actions) > 0:
+                if self.last_state:
+                    last_state = self.last_state
+                    cur_state = self.game_state
+                    last_action = self.last_action
+                    last_q = self.Q[(last_state,last_action)] 
+                    r = self.accum_reward
+                    self.Q[(last_state,last_action)] = last_q + self.alpha*(r + self.discount*max_q - last_q)
+                    self.accum_reward = 0
+                self.last_state = self.player_state
+                self.last_action = action
+            self.accum_reward += self.reward(self.game_state, action, new_state)
             self.game_state = new_state
             current_player = new_player
             if self.isDead(current_player):
@@ -162,6 +169,10 @@ class QLearning(game.Game):
             #print("Current state: ", self.game_state)
             if self.isEnd():
                 winner = self.getNextLivingPlayer(current_player)
+                last_q = self.Q[(last_state,last_action)] 
+                r = self.accum_reward
+                self.Q[(last_state,last_action)] = last_q + self.alpha*(r + self.discount*max_q - last_q)
+                self.accum_reward = 0
                 #print("Player", winner, "wins!")
                 break
         return winner
@@ -201,8 +212,9 @@ class QLearning(game.Game):
                     #action = self.chooseBaseLineAction(actions, self.game_state)
                     self.convertGameState()
                     try:
-                        
                         action = policy[self.player_state]
+                        print("Current state:", self.game_state)
+                        print("Chosen action:", action)
                         if action not in actions:
                             action = self.chooseRandomAction(actions)
                         self.f += 1
@@ -226,7 +238,7 @@ def main():
     cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
     rl = QLearning(cards)
     counts = collections.defaultdict(int)
-    for i in range(10000):
+    for i in range(500000):
         rl.reset()
         winner = rl.simulateQLearning()
         counts[winner] += 1
@@ -237,7 +249,7 @@ def main():
     rl.eps = 0
 
     counts2 = collections.defaultdict(int)
-    for i in range(1000):
+    for i in range(1):
         rl.reset()
         winner = rl.evaluatePolicy(rl.pi)
         counts2[winner] += 1
