@@ -153,11 +153,11 @@ class Game:
                 if state[2][0] == "foreign_aid":
                     return [("block_foreign_aid", i, state[2][1]), ("no_block", i, state[2][1])]
                 if state[2][2] != i:
-                    return [(None, i, None)]
+                    return [("None", i, None)]
                 if state[2][0] == "steal":
-                    return [("block_steal", i, state[2][1]), (None, i, None)]
+                    return [("block_steal", i, state[2][1]), ("no_block_steal", i, None)]
                 else:
-                    return [("block_assassinate", i, state[2][1]), (None, i, None)]
+                    return [("block_assassinate", i, state[2][1]), ("no_block_assassinate", i, None)]
 
     def chooseRandomAction(self, actions):
         return random.choice(actions)
@@ -165,7 +165,7 @@ class Game:
     def chooseBaseLineAction(self,actions,state):
         if actions[0][0] == "doubt":
             eps = 0.2
-            if state[0][0][0][0] == state[0][0][0][0] and state[2][0] in self.card_functions[state[0][0][0][0]]:
+            if state[0][0][0][0] == state[0][0][0][1] and state[2][0] in self.card_functions[state[0][0][0][0]]:
                 return actions[0]
             if random.random() < eps:
                 return actions[0]
@@ -202,9 +202,9 @@ class Game:
         i = action[1]
         j = action[2]
         new_player = self.getNextLivingPlayer(i)
-        if action[0] == "no_doubt" or action[0] == "no_block":
+        if action[0] == "no_doubt" or action[0] == "no_block" or action[0] == "None":
             return state, new_player
-        if action[0] == None:
+        if action[0] == "no_block_assassinate" or action[0] == "no_block_steal":
             new_state = self.takeEffect(state, state[2])
             new_state = (new_state[0], new_state[1], None, False)
             new_player = self.getNextLivingPlayer(self.last_player)
