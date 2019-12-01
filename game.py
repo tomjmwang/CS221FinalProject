@@ -5,7 +5,7 @@ import collections
 
 
 class Game:
-    def __init__(self, cards, player_card_num=2, num_players=3):
+    def __init__(self, cards, strategy="random", player_card_num=2, num_players=3):
         self.num_players = num_players
         self.starting_player = 0
         self.last_player = 0
@@ -17,6 +17,7 @@ class Game:
         for k,v in self.card_functions.items():
             for n in v:
                 self.function_to_char[n] = k
+        self.strategy = strategy
 
     def isEnd(self):
         dead_players = 0

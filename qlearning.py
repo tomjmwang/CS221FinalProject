@@ -3,10 +3,11 @@ import collections
 import random
 import pickle
 import time
+import numpy as np
 
 class QLearning(game.Game):
 
-    def __init__(self, cards, player_card_num=2, num_players=3):
+    def __init__(self, cards, strategy="random", player_card_num=2, num_players=3):
         self.num_players = num_players
         self.starting_player = 0
         self.last_player = 0
@@ -151,8 +152,10 @@ class QLearning(game.Game):
                     action, max_q = self.chooseQAction(actions,self.player_state)
 
                 else:
-                    #action = self.chooseRandomAction(actions)
-                    action = self.chooseBaseLineAction(actions, self.game_state)
+                    if self.strategy == "random":
+                        action = self.chooseRandomAction(actions)
+                    else:
+                        action = self.chooseBaseLineAction(actions, self.game_state)
                 new_state, new_player = self.succ(action, self.game_state)
             if current_player == 0 and len(actions) > 0:
                 if self.last_state:
@@ -231,8 +234,10 @@ class QLearning(game.Game):
                         action = self.chooseRandomAction(actions)
                         #print("errorfound")
                 else:
-                    #action = self.chooseRandomAction(actions)
-                    action = self.chooseBaseLineAction(actions, self.game_state)
+                    if self.strategy == "random":
+                        action = self.chooseRandomAction(actions)
+                    else:
+                        action = self.chooseBaseLineAction(actions, self.game_state)
                 new_state, new_player = self.succ(action, self.game_state)
             self.game_state = new_state
             current_player = new_player
@@ -244,64 +249,63 @@ class QLearning(game.Game):
         return winner
 
 def main():
+
+    TRAIN_ITERATION = 3000000
+    TEST_ITERATION = 10000
+    NUM_POINTS = 30
+    NUM_PLAYERS = 3
+    ITERATION_PER_POINT = int(TRAIN_ITERATION / NUM_POINTS)
+
     cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
-    rl = QLearning(cards, num_players=3)
+    rl = QLearning(cards, strategy="simple", num_players=NUM_PLAYERS)
+
+
+
+
+    start_time = time.time()
+
     
-    output_file = open("win_rates_simple_strategy.txt", "w")
     
-    for i in range(3):
-        print(str((i+1) * 500000))
-        with open("q_data_" + str((i+1) * 500000), "rb") as f:
-            rl.Q = pickle.load(f)
-            rl.calculatePolicy()
-        counts = collections.defaultdict(int)
-        for j in range(10000):
-            rl.reset()
-            winner = rl.evaluatePolicy(rl.pi)
-            counts[winner] += 1
-        print("Game", j+1, "ends, Player", winner, "wins.")
-        print(counts)
-        output_file.write(str((i+1) * 500000) + " iterations: " + str(float(counts[0] / 10000)) + "\n")
-    output_file.close()
-    """
+    
+    # Code for learning Q
 
     counts = collections.defaultdict(int)
     start_time = time.time()
-    for i in range(5000000):
+    for i in range(TRAIN_ITERATION):
         rl.reset()
         winner = rl.simulateQLearning()
         counts[winner] += 1
-        if (i+1) % 500000 == 0: 
-            with open("q_data_"+str(i+1), "wb") as f:
+        if (i+1) % ITERATION_PER_POINT == 0: 
+            with open("q_data"+str(i+1), "wb") as f:
                 pickle.dump(rl.Q, f)
-            print("Game", i+1, "ends, Player", winner, "wins.")
-            print(time.time() - start_time)
+            print("Game", i+1, "ends.")
+            #print(time.time() - start_time)
+    
+    total_time = time.time() - start_time
+    print("Total training time:", total_time)
     
 
-    rl.calculatePolicy()
-    rl.eps = 0
+    """
 
-    counts2 = collections.defaultdict(int)
-    for i in range(10000):
-        rl.reset()
-        winner = rl.evaluatePolicy(rl.pi)
-        counts2[winner] += 1
-        print("Game", i+1, "ends, Player", winner, "wins.")
-    print(counts)
-    print(counts2)
+    # Code for calculating win rate
+
+    output_file = open("win_rates_simple_strategy.txt", "w")
     
-    print(len(rl.Q))
-    print(len(rl.pi))
-    print("e:", rl.e, "f:" ,rl.f)
-    
-    counter = collections.defaultdict(int)
-    for k,v in rl.Q.items():
-        counter[k[0]] += 1
-    with open("count.txt", "w") as f:
-        for k,v in counter.items():
-            f.write(str(k) + ": " + str(v) + "\n")
-            f.write(str(rl.pi[k]) + "\n")
-    print(sum(list(counter.values())) / len(counter))
+    for i in range(NUM_POINTS):
+        print(str((i+1) * ITERATION_PER_POINT))
+        with open("q_data_" + str((i+1) * ITERATION_PER_POINT), "rb") as f:
+            rl.Q = pickle.load(f)
+            rl.calculatePolicy()
+        counts = collections.defaultdict(int)
+        for j in range(TEST_ITERATION):
+            rl.reset()
+            winner = rl.evaluatePolicy(rl.pi)
+            counts[winner] += 1
+        #print("Game", j+1, "ends.")
+        #print(counts)
+        output_file.write(str((i+1) * ITERATION_PER_POINT) + " iterations: " + str(float(counts[0] / TEST_ITERATION)) + "\n")
+    output_file.close()
+
     """
 
 if __name__ == "__main__":

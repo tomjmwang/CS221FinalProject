@@ -4,7 +4,7 @@ import qlearning
 
 class FeatureQLearning(qlearning.QLearning):
 
-    def __init__(self, cards, player_card_num=2, num_players=3):
+    def __init__(self, cards, strategy="random", player_card_num=2, num_players=3):
         self.num_players = num_players
         self.starting_player = 0
         self.last_player = 0
@@ -26,36 +26,8 @@ class FeatureQLearning(qlearning.QLearning):
         self.f = 0
         self.last_state = None
         self.accum_reward = 0
+        self.strategy = strategy
 
-
-    def reward(self, old_state, action, new_state):
-        score = 0.0
-        if self.isEndState(new_state) and self.getNextLivingPlayer(0) == 0:
-            score += 1000.0
-
-        num_living_old = 0
-        num_living_new = 0
-        for j, card in enumerate(old_state[0][0]):
-            if card[1] == 1:
-                num_living_old += 1
-            if new_state[0][0][j][1] == 1:
-                num_living_new += 1
-
-        score -= 500 * (num_living_old - num_living_new)
-
-        for i in range(1, self.num_players):
-            num_living_old = 0
-            num_living_new = 0
-            for j, card in enumerate(old_state[0][i]):
-                if card[1] == 1:
-                    num_living_old += 1
-                if new_state[0][i][j][1] == 1:
-                    num_living_new += 1
-            score += (num_living_old - num_living_new) * 100
-
-
-
-        return score
 
     def convertGameState(self):
         feature_state = [0 for i in range(6)]
@@ -153,8 +125,10 @@ class FeatureQLearning(qlearning.QLearning):
                         action = self.chooseRandomAction(actions)
                         #print("errorfound")
                 else:
-                    #action = self.chooseRandomAction(actions)
-                    action = self.chooseBaseLineAction(actions, self.game_state)
+                    if self.strategy == "random":
+                        action = self.chooseRandomAction(actions)
+                    else:
+                        action = self.chooseBaseLineAction(actions, self.game_state)
                 new_state, new_player = self.succ(action, self.game_state)
             self.game_state = new_state
             current_player = new_player
@@ -166,41 +140,62 @@ class FeatureQLearning(qlearning.QLearning):
         return winner
 
 def main():
-    cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
-    rl = FeatureQLearning(cards, num_players=3)
+    TRAIN_ITERATION = 3000000
+    TEST_ITERATION = 10000
+    NUM_POINTS = 30
+    NUM_PLAYERS = 3
+    ITERATION_PER_POINT = int(TRAIN_ITERATION / NUM_POINTS)
 
+    cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
+    rl = FeatureQLearning(cards, strategy="simple", num_players=NUM_PLAYERS)
+
+
+
+
+    start_time = time.time()
+
+    
+    
+    
+    # Code for learning Q
 
     counts = collections.defaultdict(int)
-    for i in range(100000):
+    start_time = time.time()
+    for i in range(TRAIN_ITERATION):
         rl.reset()
         winner = rl.simulateQLearning()
         counts[winner] += 1
-        print("Game", i+1, "ends, Player", winner, "wins.")
-
-    rl.calculatePolicy()
-    rl.eps = 0
-
-    counts2 = collections.defaultdict(int)
-    for i in range(10000):
-        rl.reset()
-        winner = rl.evaluatePolicy(rl.pi)
-        counts2[winner] += 1
-        print("Game", i+1, "ends, Player", winner, "wins.")
-    print(counts)
-    print(counts2)
+        if (i+1) % ITERATION_PER_POINT == 0: 
+            with open("q_data"+str(i+1), "wb") as f:
+                pickle.dump(rl.Q, f)
+            print("Game", i+1, "ends.")
+            #print(time.time() - start_time)
     
-    print(len(rl.Q))
-    print(len(rl.pi))
-    print("e:", rl.e, "f:" ,rl.f)
+    total_time = time.time() - start_time
+    print("Total training time:", total_time)
     
-    counter = collections.defaultdict(int)
-    for k,v in rl.Q.items():
-        counter[k[0]] += 1
-    with open("count.txt", "w") as f:
-        for k,v in counter.items():
-            f.write(str(k) + ": " + str(v) + "\n")
-            f.write(str(rl.pi[k]) + "\n")
-    print(sum(list(counter.values())) / len(counter))
+    """
+
+    # Code for calculating win rate
+
+    output_file = open("win_rates_simple_strategy.txt", "w")
+    
+    for i in range(NUM_POINTS):
+        print(str((i+1) * ITERATION_PER_POINT))
+        with open("q_data_" + str((i+1) * ITERATION_PER_POINT), "rb") as f:
+            rl.Q = pickle.load(f)
+            rl.calculatePolicy()
+        counts = collections.defaultdict(int)
+        for j in range(TEST_ITERATION):
+            rl.reset()
+            winner = rl.evaluatePolicy(rl.pi)
+            counts[winner] += 1
+        #print("Game", j+1, "ends.")
+        #print(counts)
+        output_file.write(str((i+1) * ITERATION_PER_POINT) + " iterations: " + str(float(counts[0] / TEST_ITERATION)) + "\n")
+    output_file.close()
+
+    """
 
 
 if __name__ == "__main__":
