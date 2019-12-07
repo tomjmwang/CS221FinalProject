@@ -1,0 +1,35 @@
+num_players: 3
+strategy: simple
+eps: 0.2
+discount: 0.95
+alpha: 0.05
+100000 iterations: 0.4889
+200000 iterations: 0.5222
+300000 iterations: 0.5406
+400000 iterations: 0.5629
+500000 iterations: 0.5814
+600000 iterations: 0.5866
+700000 iterations: 0.594
+800000 iterations: 0.6009
+900000 iterations: 0.6107
+1000000 iterations: 0.6226
+1100000 iterations: 0.6258
+1200000 iterations: 0.6267
+1300000 iterations: 0.6366
+1400000 iterations: 0.6338
+1500000 iterations: 0.6395
+1600000 iterations: 0.6453
+1700000 iterations: 0.6534
+1800000 iterations: 0.6571
+1900000 iterations: 0.6555
+2000000 iterations: 0.6526
+2100000 iterations: 0.6564
+2200000 iterations: 0.6635
+2300000 iterations: 0.6687
+2400000 iterations: 0.6674
+2500000 iterations: 0.668
+2600000 iterations: 0.657
+2700000 iterations: 0.6731
+2800000 iterations: 0.6763
+2900000 iterations: 0.6619
+3000000 iterations: 0.6753
