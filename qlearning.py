@@ -29,6 +29,7 @@ class QLearning(game.Game):
         self.f = 0
         self.last_state = None
         self.accum_reward = 0
+        self.strategy = strategy
 
     def isEndState(self, state):
         dead_players = 0
@@ -255,9 +256,10 @@ def main():
     NUM_POINTS = 30
     NUM_PLAYERS = 3
     ITERATION_PER_POINT = int(TRAIN_ITERATION / NUM_POINTS)
+    STRATEGY = "random"
 
     cards = [("duke",1), ("duke",1),("assassin",1),("assassin",1),("contessa",1),("contessa",1),("captain",1),("captain",1),("ambassador",1),("ambassador",1)]
-    rl = QLearning(cards, strategy="simple", num_players=NUM_PLAYERS)
+    rl = QLearning(cards, strategy=STRATEGY, num_players=NUM_PLAYERS)
 
 
 
@@ -276,7 +278,7 @@ def main():
         winner = rl.simulateQLearning()
         counts[winner] += 1
         if (i+1) % ITERATION_PER_POINT == 0: 
-            with open("q_data"+str(i+1), "wb") as f:
+            with open("q_data_"+str(i+1), "wb") as f:
                 pickle.dump(rl.Q, f)
             print("Game", i+1, "ends.")
             #print(time.time() - start_time)
@@ -285,11 +287,11 @@ def main():
     print("Total training time:", total_time)
     
 
-    """
+    
 
     # Code for calculating win rate
 
-    output_file = open("win_rates_simple_strategy.txt", "w")
+    output_file = open("win_rates_" + str(NUM_PLAYERS) + "_" + STRATEGY + "_" + ".txt", "w")
     
     for i in range(NUM_POINTS):
         print(str((i+1) * ITERATION_PER_POINT))
@@ -304,9 +306,10 @@ def main():
         #print("Game", j+1, "ends.")
         #print(counts)
         output_file.write(str((i+1) * ITERATION_PER_POINT) + " iterations: " + str(float(counts[0] / TEST_ITERATION)) + "\n")
+    output_file.write("Total traning time: " + str(total_time) + " seconds\n")
     output_file.close()
 
-    """
+    
 
 if __name__ == "__main__":
     main()
